@@ -1,0 +1,32 @@
+1.Create a regcred and edit the values.yaml file
+2.install the azure cli - $ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'; rm .\AzureCLI.msi
+3.Use the azure cli to further create an aks cluster, login as- "az login"
+4.az aks create --resource-group Vannu-rg --name test-cluster-1_5 --node-count 2 --enable-addons monitoring --generate-ssh-keys --windows-admin-username Vanashree --vm-set-type VirtualMachineScaleSets --network-plugin azure 
+-optional/skip to generate new pwd--windows-admin-password <your_password> min lenth is 14 - Siddarth@261996
+5.add win node pool - az aks nodepool add --resource-group Vannu-rg --cluster-name test-cluster-1_5 --os-type Windows --name npwin --node-count 2
+6.get credentails - az aks get-credentials --resource-group Vannu-rg --name test-cluster-1_5
+7.in helm directory - 
+helm upgrade --install lw-agent lacework-agent-windows --set windowsAgent.agentConfig.accessToken=3c313c219d6d817e67c8b132a6cad20e25a9d7f788368176cf3c0aff --set windowsAgent.agentConfig.serverUrl=https://win-beta.qa9.corp.lacework.net
+
+helm upgrade --install lw-agent lacework-agent-windows --set windowsAgent.image.repository=lacework/datacollector-windows-private --set windowsAgent.agentConfig.accessToken=3c313c219d6d817e67c8b132a6cad20e25a9d7f788368176cf3c0aff --set windowsAgent.agentConfig.serverUrl=https://win-beta.qa9.corp.lacework.net --set windowsAgent.image.tag=1.5.0.3369
+
+8.if machines are not signed , turn on test mode- kubectl exec lacework-agent-windows-rw6mr -- bcdedit /set testsigning on
+9.shutdown and restart - kubectl exec lacework-agent-windows-rw6mr -- shutdown -r
+
+
+
+kubectl get nodes
+kubectl get pods
+kubectl describe pod YOUR_POD_NAME
+kubectl logs YOUR_POD_NAME
+
+10.rdp to server nodes - 
+$CLUSTER_RG=az aks show -g Vannu-rg -n test-cluster-01 --query nodeResourceGroup -o tsv
+$VNET_NAME=az network vnet list -g $CLUSTER_RG --query [0].name -o tsv
+$SUBNET_NAME=az network vnet subnet list -g $CLUSTER_RG --vnet-name $VNET_NAME --query [0].name -o tsv
+$SUBNET_ID=az network vnet subnet show -g $CLUSTER_RG --vnet-name $VNET_NAME --name $SUBNET_NAME --query id -o tsv
+
+11.create a vm - 
+$PUBLIC_IP_ADDRESS="myVMPublicIP"
+az vm create --resource-group Vannu-rg --name test-VM --image win2019datacenter --admin-username Vannu --admin-password Vannu@510 --subnet $SUBNET_ID --nic-delete-option delete --os-disk delete-option delete --nsg "none" --public-ip-address $PUBLIC_IP_ADDRESS --query publicIpAddress -o tsv
+# You will get an output like: 20.3.222.40, it is the public IP address of VM, 

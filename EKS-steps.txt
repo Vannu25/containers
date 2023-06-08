@@ -1,0 +1,14 @@
+1. eksctl create cluster -f cluster.yaml --profile default (changes in cluster file - add your public key and name)
+2. eksctl utils write-kubeconfig --cluster=eks-windows-vanu --set-kubeconfig-context=true --region us-west-2 --profile default
+3. provide creds - kubectl create secret docker-registry regcred(az) --docker-server=https://index.docker.io/v1/ --docker-username=vanashreebandla590 --docker-password=dckr_pat_eZnL41c5M5K6j0Y_5UaEK_Srdog --docker-email=vanashree.bandla@lacework.net
+4. edit values.yaml - add created creds.
+5. eksctl get nodegroup --cluster=eks-windows-vanu 
+6. eksctl get iamidentitymapping --cluster eks-windows-vanu --output yaml
+7. edit aws auth file - add deets.
+8. kubectl apply -f aws-auth.yaml
+9. helm upgrade --install lw-agent lacework-agent-windows --set windowsAgent.image.repository=lacework/datacollector-windows-private --set windowsAgent.agentConfig.accessToken=d8681ad805ef0c5aaa797c39c580a76e991e4a10050664a6820f4b0c --set windowsAgent.agentConfig.serverUrl=https://win-beta.qa9.corp.lacework.net --set windowsAgent.image.tag=1.5.0.3369
+helm install lw-agent lacework-agent-windows --set windowsAgent.agentConfig.accessToken=3315c4550c64dc3ff68a9729a45a49d3b79fb173a26add7c31da701c
+10.Kubectl get pods
+11.Kubectl get nodes
+12.kubectl describe pod (pod name)
+
